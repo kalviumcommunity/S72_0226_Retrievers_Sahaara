@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/validators.dart';
 import '../../utils/constants.dart';
+import '../common/profile_setup_screen.dart';
 
 /// Signup screen for new users
 class SignupScreen extends StatefulWidget {
@@ -381,7 +382,13 @@ class _SignupScreenState extends State<SignupScreen> {
           backgroundColor: Colors.green,
         ),
       );
-      // TODO: Navigate to profile setup screen
+      // Navigate to profile setup screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProfileSetupScreen(role: widget.role),
+        ),
+      );
     }
   }
 }
