@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../repositories/user_repository.dart';
+import '../../services/image_service.dart';
+import '../../services/location_service.dart';
 import '../../utils/validators.dart';
 import '../../utils/constants.dart';
+import '../../models/user_model.dart';
 import '../owner/pet_profile_form.dart';
 import '../caregiver/caregiver_profile_setup.dart';
 
@@ -24,7 +29,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _userRepository = UserRepository();
+  final _imageService = ImageService();
+  final _locationService = LocationService();
   bool _isLoading = false;
+  File? _selectedImage;
+  String? _profilePhotoUrl;
 
   @override
   void dispose() {
@@ -88,10 +97,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       CircleAvatar(
                         radius: 60,
                         backgroundColor: Colors.grey[200],
-                        backgroundImage: user?.photoURL != null
-                            ? NetworkImage(user!.photoURL!)
-                            : null,
-                        child: user?.photoURL == null
+                        backgroundImage: _selectedImage != null
+                            ? FileImage(_selectedImage!)
+                            : (user?.photoURL != null
+                                ? NetworkImage(user!.photoURL!)
+                                : null) as ImageProvider?,
+                        child: _selectedImage == null && user?.photoURL == null
                             ? Icon(
                                 Icons.person,
                                 size: 60,
@@ -102,17 +113,20 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       Positioned(
                         bottom: 0,
                         right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            color: Colors.white,
-                            size: 20,
+                        child: GestureDetector(
+                          onTap: _showImageSourceDialog,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ),
@@ -124,9 +138,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 
                 Center(
                   child: TextButton.icon(
-                    onPressed: _handlePhotoUpload,
+                    onPressed: _showImageSourceDialog,
                     icon: const Icon(Icons.upload),
-                    label: const Text('Upload Photo'),
+                    label: Text(_selectedImage != null ? 'Change Photo' : 'Upload Photo'),
                   ),
                 ),
                 
@@ -191,6 +205,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     labelText: 'Address',
                     hintText: 'Enter your address',
                     prefixIcon: const Icon(Icons.location_on_outlined),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.my_location),
+                      onPressed: _getCurrentLocation,
+                      tooltip: 'Use current location',
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -237,14 +256,106 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Future<void> _handlePhotoUpload() async {
-    // TODO: Implement photo upload with image_picker
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Photo upload will be implemented with image_picker'),
-        backgroundColor: Colors.blue,
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a Photo'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickImage(ImageSource.camera);
+              },
+            ),
+            if (_selectedImage != null || _profilePhotoUrl != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _selectedImage = null;
+                    _profilePhotoUrl = null;
+                  });
+                },
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final image = await _imageService.pickImage(
+        showDialog: false,
+        source: source,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = image;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final locationData = await _locationService.getCurrentLocationWithAddress();
+      
+      if (mounted) {
+        setState(() {
+          _addressController.text = locationData['address'];
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location detected successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handlePhotoUpload() async {
+    await _showImageSourceDialog();
   }
 
   Future<void> _handleContinue() async {
@@ -256,13 +367,34 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('No user logged in');
 
+      // Upload profile photo if selected
+      String? photoUrl;
+      if (_selectedImage != null) {
+        photoUrl = await _imageService.uploadImage(
+          imageFile: _selectedImage!,
+          path: 'users/${user.uid}/profile.jpg',
+        );
+      }
+
+      // Get coordinates from address
+      GeoPoint? geopoint;
+      try {
+        geopoint = await _locationService.getCoordinatesFromAddress(
+          _addressController.text.trim(),
+        );
+      } catch (e) {
+        // If geocoding fails, use default coordinates
+        geopoint = const GeoPoint(0, 0);
+      }
+
       // Update user profile
       await _userRepository.updateUserProfile(
         userId: user.uid,
         phone: _phoneController.text.trim(),
+        profilePhoto: photoUrl,
         location: UserLocation(
           address: _addressController.text.trim(),
-          geopoint: const GeoPoint(0, 0), // TODO: Get actual location
+          geopoint: geopoint ?? const GeoPoint(0, 0),
         ),
       );
 
