@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/pet_provider.dart';
-import 'screens/auth/welcome_screen.dart';
+import 'screens/common/home_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,10 +83,10 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2));
     
     if (mounted) {
-      // Navigate to Welcome Screen
+      // Navigate to Home Router (checks auth and role)
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+        MaterialPageRoute(builder: (context) => const HomeRouter()),
       );
     }
   }
