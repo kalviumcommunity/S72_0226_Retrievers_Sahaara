@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'firebase_options.dart';
-// import 'package:provider/provider.dart';
-
-// TODO: Uncomment after running 'flutterfire configure'
-// import 'providers/auth_provider.dart';
-// import 'providers/caregiver_provider.dart';
-// import 'providers/booking_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
+import 'screens/auth/welcome_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // TODO: Uncomment after Firebase setup
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   runApp(const SaharaApp());
 }
@@ -24,17 +21,14 @@ class SaharaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Add MultiProvider when you create providers
-    // return MultiProvider(
-    //   providers: [
-    //     ChangeNotifierProvider(create: (_) => AuthProvider()),
-    //     ChangeNotifierProvider(create: (_) => CaregiverProvider()),
-    //     ChangeNotifierProvider(create: (_) => BookingProvider()),
-    //   ],
-    //   child: MaterialApp(...),
-    // );
-    
-    return MaterialApp(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        // TODO: Add more providers as they are created
+        // ChangeNotifierProvider(create: (_) => CaregiverProvider()),
+        // ChangeNotifierProvider(create: (_) => BookingProvider()),
+      ],
+      child: MaterialApp(
       title: 'Sahara',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -61,12 +55,37 @@ class SaharaApp extends StatelessWidget {
         ),
       ),
       home: const SplashScreen(),
+      ),
     );
   }
 }
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _navigateToHome();
+  }
+
+  Future<void> _navigateToHome() async {
+    // Wait for 2 seconds
+    await Future.delayed(const Duration(seconds: 2));
+    
+    if (mounted) {
+      // Navigate to Welcome Screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
