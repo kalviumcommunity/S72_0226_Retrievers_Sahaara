@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../common/user_profile_view.dart';
+import '../common/settings_screen.dart';
 import 'caregiver_profile_setup.dart';
 
 /// Caregiver home screen with dashboard and navigation
@@ -169,7 +170,12 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
                 title: const Text('Settings'),
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Navigate to settings
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
                 },
               ),
               ListTile(
