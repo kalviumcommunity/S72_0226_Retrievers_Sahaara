@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../repositories/pet_repository.dart';
+import '../../services/image_service.dart';
 import '../../models/pet_model.dart';
 import '../../utils/validators.dart';
 import '../../utils/constants.dart';
@@ -27,10 +30,13 @@ class _PetProfileFormState extends State<PetProfileForm> {
   final _specialNeedsController = TextEditingController();
   final _medicalInfoController = TextEditingController();
   final _petRepository = PetRepository();
+  final _imageService = ImageService();
 
   String _selectedType = AppConstants.petTypeDog;
   String _selectedGender = 'male';
   bool _isLoading = false;
+  File? _selectedImage;
+  String? _petPhotoUrl;
 
   @override
   void initState() {
@@ -50,6 +56,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
     _medicalInfoController.text = pet.medicalInfo ?? '';
     _selectedType = pet.type;
     _selectedGender = pet.gender;
+    _petPhotoUrl = pet.photo;
   }
 
   @override
@@ -109,26 +116,36 @@ class _PetProfileFormState extends State<PetProfileForm> {
                       CircleAvatar(
                         radius: 60,
                         backgroundColor: Colors.grey[200],
-                        child: Icon(
-                          Icons.pets,
-                          size: 60,
-                          color: Colors.grey[400],
-                        ),
+                        backgroundImage: _selectedImage != null
+                            ? FileImage(_selectedImage!)
+                            : (_petPhotoUrl != null
+                                ? NetworkImage(_petPhotoUrl!)
+                                : null) as ImageProvider?,
+                        child: _selectedImage == null && _petPhotoUrl == null
+                            ? Icon(
+                                Icons.pets,
+                                size: 60,
+                                color: Colors.grey[400],
+                              )
+                            : null,
                       ),
                       Positioned(
                         bottom: 0,
                         right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            color: Colors.white,
-                            size: 20,
+                        child: GestureDetector(
+                          onTap: _showImageSourceDialog,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ),
@@ -140,9 +157,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 
                 Center(
                   child: TextButton.icon(
-                    onPressed: _handlePhotoUpload,
+                    onPressed: _showImageSourceDialog,
                     icon: const Icon(Icons.upload),
-                    label: const Text('Upload Pet Photo'),
+                    label: Text(_selectedImage != null || _petPhotoUrl != null
+                        ? 'Change Pet Photo'
+                        : 'Upload Pet Photo'),
                   ),
                 ),
                 
@@ -340,14 +359,72 @@ class _PetProfileFormState extends State<PetProfileForm> {
     );
   }
 
-  Future<void> _handlePhotoUpload() async {
-    // TODO: Implement photo upload with image_picker
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Photo upload will be implemented with image_picker'),
-        backgroundColor: Colors.blue,
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a Photo'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickImage(ImageSource.camera);
+              },
+            ),
+            if (_selectedImage != null || _petPhotoUrl != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _selectedImage = null;
+                    _petPhotoUrl = null;
+                  });
+                },
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final image = await _imageService.pickImage(
+        showDialog: false,
+        source: source,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = image;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handlePhotoUpload() async {
+    await _showImageSourceDialog();
   }
 
   Future<void> _handleSave() async {
@@ -359,6 +436,16 @@ class _PetProfileFormState extends State<PetProfileForm> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('No user logged in');
 
+      // Upload pet photo if selected
+      String? photoUrl = _petPhotoUrl;
+      if (_selectedImage != null) {
+        final petId = widget.existingPet?.petId ?? DateTime.now().millisecondsSinceEpoch.toString();
+        photoUrl = await _imageService.uploadImage(
+          imageFile: _selectedImage!,
+          path: 'pets/$petId/photo.jpg',
+        );
+      }
+
       final pet = PetModel(
         petId: widget.existingPet?.petId ?? '',
         ownerId: user.uid,
@@ -368,6 +455,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
         age: int.parse(_ageController.text),
         weight: double.parse(_weightController.text),
         gender: _selectedGender,
+        photo: photoUrl,
         specialNeeds: _specialNeedsController.text.trim().isEmpty
             ? null
             : _specialNeedsController.text.trim(),
