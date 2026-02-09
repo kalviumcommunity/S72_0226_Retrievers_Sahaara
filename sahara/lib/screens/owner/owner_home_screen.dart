@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../common/user_profile_view.dart';
+import '../common/settings_screen.dart';
 import 'pet_list_screen.dart';
 import 'pet_profile_form.dart';
 
@@ -178,7 +179,12 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                 title: const Text('Settings'),
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Navigate to settings
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
                 },
               ),
               ListTile(
