@@ -195,9 +195,9 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     ),
                   ),
                   items: PetTypes.all.map((type) {
-                    return DropdownMenuItem(
-                      value: type['id'],
-                      child: Text(type['name']),
+                    return DropdownMenuItem<String>(
+                      value: type['id'] as String,
+                      child: Text(type['name'] as String),
                     );
                   }).toList(),
                   onChanged: (value) {

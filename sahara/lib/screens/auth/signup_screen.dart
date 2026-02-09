@@ -123,7 +123,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       onPressed: () {
                         setState(() {
-                          _obscurePassword = !_obscurePassword,
+                          _obscurePassword = !_obscurePassword;
                         });
                       },
                     ),
