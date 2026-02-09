@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/user_provider.dart';
+import 'providers/pet_provider.dart';
 import 'screens/auth/welcome_screen.dart';
 
 void main() async {
@@ -24,6 +26,8 @@ class SaharaApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => PetProvider()),
         // TODO: Add more providers as they are created
         // ChangeNotifierProvider(create: (_) => CaregiverProvider()),
         // ChangeNotifierProvider(create: (_) => BookingProvider()),
