@@ -1,16 +1,32 @@
-# Sahara - Pet Discovery & Monitoring Platform
+# 🐾 Sahara - Pet Discovery & Monitoring Platform
 
-**Team Retrievers** | Kalvium Sprint #2
+**Team Retrievers | Kalvium S72**
 
-A Flutter + Firebase mobile application connecting pet owners with verified caregivers through real-time monitoring.
+A comprehensive Flutter application connecting pet owners with trusted caregivers, featuring real-time monitoring and secure booking services.
 
 ---
 
-## 🚀 Quick Start
+## 📱 Quick Links
+
+- **Main App:** [`sahara/`](sahara/)
+- **Documentation:** [`docs/`](docs/)
+- **PR Documentation:** [`docs/pr-documentation/`](docs/pr-documentation/)
+
+---
+
+## 🚀 Getting Started
 
 ```bash
+# Clone repository
+git clone https://github.com/kalviumcommunity/S72_0226_Retrievers_Sahaara.git
+
+# Navigate to app
 cd sahara
+
+# Install dependencies
 flutter pub get
+
+# Run app
 flutter run -d chrome
 ```
 
@@ -18,78 +34,36 @@ flutter run -d chrome
 
 ## 📚 Documentation
 
-All project documentation is in the `sahara/` folder:
-
-- **[sahara/README.md](sahara/README.md)** - Complete project documentation
-- **[sahara/QUICKSTART.md](sahara/QUICKSTART.md)** - 10-minute setup guide
-- **[sahara/TEAM_CHECKLIST.md](sahara/TEAM_CHECKLIST.md)** - Week-by-week tasks
-- **[sahara/PROJECT_SUMMARY.md](sahara/PROJECT_SUMMARY.md)** - Project overview
-- **[sahara/docs/SETUP_GUIDE.md](sahara/docs/SETUP_GUIDE.md)** - Detailed setup
-- **[sahara/docs/ARCHITECTURE.md](sahara/docs/ARCHITECTURE.md)** - Technical architecture
-- **[sahara/docs/DATABASE_SCHEMA.md](sahara/docs/DATABASE_SCHEMA.md)** - Database structure
+- **App README:** [sahara/README.md](sahara/README.md)
+- **Testing Guide:** [sahara/TESTING_GUIDE.md](sahara/TESTING_GUIDE.md)
+- **Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- **Database Schema:** [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)
+- **Setup Guide:** [docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)
+- **PR Documentation:** [docs/pr-documentation/](docs/pr-documentation/)
 
 ---
 
-## 🎯 Project Structure
+## 👥 Team
 
-```
-sahara/                    # Main Flutter project
-├── lib/                   # Source code
-├── docs/                  # Documentation
-├── assets/                # Images & icons
-└── test/                  # Tests
-```
+**Team Retrievers**
+- **Gaurav** - Authentication & Profile Management
+- **Team Member 2** - Discovery & Booking System
+- **Team Member 3** - Monitoring & Reviews
 
 ---
 
-## ✅ Current Status
+## 📊 Project Status
 
-- ✅ Project setup complete
-- ✅ App running successfully
-- ✅ Ready for Firebase configuration
-- ✅ Ready for feature development
-
----
-
-## 🔥 Firebase Setup
-
-```bash
-# Install Firebase CLI
-npm install -g firebase-tools
-
-# Install FlutterFire CLI
-dart pub global activate flutterfire_cli
-
-# Configure Firebase
-flutterfire configure
-```
-
-Create Firebase project named **"Sahara"** and enable:
-- Authentication (Email/Password, Google)
-- Firestore Database
-- Storage
+**Week 1:** ✅ Complete (Authentication, Profiles, Pet Management, Navigation)  
+**Week 2:** 🔄 In Progress (Discovery, Booking, Chat)  
+**Week 3:** 📅 Planned (Monitoring, Reviews, Payments)
 
 ---
 
-## 👥 Team Roles
+## 🔗 Repository
 
-1. **Authentication & Profiles** - User auth, pet profiles
-2. **Discovery & Booking** - Caregiver search, booking system
-3. **Monitoring & Reviews** - Real-time updates, reviews
-
-See [sahara/TEAM_CHECKLIST.md](sahara/TEAM_CHECKLIST.md) for detailed tasks.
+https://github.com/kalviumcommunity/S72_0226_Retrievers_Sahaara
 
 ---
 
-## 🛠 Development Commands
-
-```bash
-flutter run              # Run app
-flutter analyze          # Check for issues
-flutter test             # Run tests
-flutter pub get          # Get dependencies
-```
-
----
-
-**Start building with [sahara/TEAM_CHECKLIST.md](sahara/TEAM_CHECKLIST.md)** 🐾
+**Built with ❤️ by Team Retrievers**
