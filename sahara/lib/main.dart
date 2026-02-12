@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/pet_provider.dart';
+import 'providers/caregiver_provider.dart';
+import 'providers/booking_provider.dart';
 import 'screens/common/home_router.dart';
 
 void main() async {
@@ -28,6 +30,8 @@ class SaharaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => PetProvider()),
+        ChangeNotifierProvider(create: (_) => CaregiverProvider()),
+        ChangeNotifierProvider(create: (_) => BookingProvider()),
         // TODO: Add more providers as they are created
         // ChangeNotifierProvider(create: (_) => CaregiverProvider()),
         // ChangeNotifierProvider(create: (_) => BookingProvider()),
