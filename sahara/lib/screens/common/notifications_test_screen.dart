@@ -140,7 +140,7 @@ class _NotificationsTestScreenState extends State<NotificationsTestScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.blue100,
+              color: AppTheme.gray100,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
               ),
@@ -379,7 +379,7 @@ class _NotificationsTestScreenState extends State<NotificationsTestScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isRead ? AppTheme.white : AppTheme.blue50,
+        color: isRead ? AppTheme.white : AppTheme.gray50,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isRead ? AppTheme.borderColor : typeColor.withValues(alpha: 0.3),

@@ -237,7 +237,7 @@ class _NotificationsSettingsScreenState
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.blue50,
+                    color: AppTheme.gray50,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: AppTheme.primaryColor.withValues(alpha: 0.3),
