@@ -296,7 +296,7 @@ class _UserProfileViewState extends State<UserProfileView> {
               ],
             ),
           ),
-          if (trailing != null) trailing,
+          ?trailing,
         ],
       ),
     );

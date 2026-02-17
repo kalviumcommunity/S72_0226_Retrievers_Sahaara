@@ -186,7 +186,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 
                 // Pet Type
                 DropdownButtonFormField<String>(
-                  value: _selectedType,
+                  initialValue: _selectedType,
                   decoration: InputDecoration(
                     labelText: 'Pet Type *',
                     prefixIcon: const Icon(Icons.category_outlined),
@@ -269,7 +269,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 
                 // Gender
                 DropdownButtonFormField<String>(
-                  value: _selectedGender,
+                  initialValue: _selectedGender,
                   decoration: InputDecoration(
                     labelText: 'Gender *',
                     prefixIcon: const Icon(Icons.wc_outlined),
