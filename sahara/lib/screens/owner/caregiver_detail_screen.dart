@@ -4,6 +4,7 @@ import '../../providers/caregiver_provider.dart';
 import '../../models/caregiver_model.dart';
 import '../../models/user_model.dart';
 import '../../widgets/loading_skeleton.dart';
+import '../owner/create_booking_screen.dart';
 
 /// Screen for viewing detailed caregiver profile
 class CaregiverDetailScreen extends StatefulWidget {
@@ -359,7 +360,15 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
             flex: 2,
             child: ElevatedButton.icon(
               onPressed: () {
-                // TODO: Book caregiver
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateBookingScreen(
+                      caregiverId: caregiver.caregiverId,
+                      hourlyRate: caregiver.hourlyRate,
+                    ),
+                  ),
+                );
               },
               icon: const Icon(Icons.calendar_today),
               label: const Text('Book Now'),
