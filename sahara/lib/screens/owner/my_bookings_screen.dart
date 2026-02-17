@@ -12,7 +12,27 @@ class MyBookingsScreen extends StatefulWidget {
 
 class _MyBookingsScreenState extends State<MyBookingsScreen> {
   String _selectedTab = 'Active';
+  bool _isLoading = false;
   final List<String> _tabs = ['Active', 'Completed', 'Cancelled'];
+
+  Future<void> _refreshBookings() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to refresh: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,57 +44,64 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         foregroundColor: AppTheme.black,
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          // Tabs
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: AppTheme.white,
-            child: Row(
-              children: _tabs.map((tab) {
-                final isSelected = _selectedTab == tab;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedTab = tab;
-                      });
-                    },
-                    child: Column(
-                      children: [
-                        Text(
-                          tab,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? AppTheme.primaryColor : AppTheme.gray500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        if (isSelected)
-                          Container(
-                            height: 2,
-                            color: AppTheme.primaryColor,
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          // Content
-          Expanded(
-            child: SingleChildScrollView(
+      body: RefreshIndicator(
+        onRefresh: _refreshBookings,
+        backgroundColor: AppTheme.white,
+        color: AppTheme.primaryColor,
+        child: Column(
+          children: [
+            Container(
               padding: const EdgeInsets.all(16),
-              child: DashboardEmptyState(
-                icon: Icons.calendar_today,
-                title: 'No $_selectedTab bookings',
-                subtitle: 'Your bookings will appear here',
+              color: AppTheme.white,
+              child: Row(
+                children: _tabs.map((tab) {
+                  final isSelected = _selectedTab == tab;
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: _isLoading
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectedTab = tab;
+                              });
+                              _refreshBookings();
+                            },
+                      child: Column(
+                        children: [
+                          Text(
+                            tab,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected ? AppTheme.primaryColor : AppTheme.gray500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (isSelected)
+                            Container(
+                              height: 2,
+                              color: AppTheme.primaryColor,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: DashboardEmptyState(
+                  icon: _isLoading ? Icons.hourglass_empty : Icons.calendar_today,
+                  title: _isLoading ? 'Loading bookings...' : 'No $_selectedTab bookings',
+                  subtitle: _isLoading ? 'Please wait' : 'Your bookings will appear here',
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
