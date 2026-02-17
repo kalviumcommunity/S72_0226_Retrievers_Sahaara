@@ -74,6 +74,9 @@ class AppRoutes {
   static const String notificationSettings = '/notification-settings';
   static const String notificationsTest = '/notifications-test';
 
+  // ============ FILTER ROUTES ============
+  static const String filterDemo = '/filter-demo';
+
   // ============ ERROR ROUTES ============
   static const String notFound = '/404';
   static const String error = '/error';
