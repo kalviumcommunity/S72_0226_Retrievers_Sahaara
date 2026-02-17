@@ -6,7 +6,6 @@ import '../../models/activity_model.dart';
 import '../../providers/activity_provider.dart';
 import '../../services/image_service.dart';
 import '../../services/location_service.dart';
-import '../../widgets/custom_button.dart';
 
 /// Screen for caregivers to add activity updates
 class AddActivityScreen extends StatefulWidget {

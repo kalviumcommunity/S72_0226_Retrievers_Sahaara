@@ -178,7 +178,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                 InfoBanner(
                   icon: Icons.phone,
                   title: 'Phone: ${user?.phone ?? 'Not provided'}',
-                  message: 'Verified' + (user?.phoneVerified == true ? ' ✓' : ''),
+                  message: 'Verified${user?.phoneVerified == true ? ' ✓' : ''}',
                   backgroundColor: AppTheme.infoColor,
                   textColor: AppTheme.infoColor,
                 ),

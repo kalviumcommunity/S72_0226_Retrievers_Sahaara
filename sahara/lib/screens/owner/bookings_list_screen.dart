@@ -174,7 +174,7 @@ class _BookingsListScreenState extends State<BookingsListScreen>
                   const Icon(Icons.currency_rupee, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
                   Text(
-                    '${booking.totalAmount.toStringAsFixed(0)}',
+                    booking.totalAmount.toStringAsFixed(0),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

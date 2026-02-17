@@ -19,7 +19,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
   final _nameController = TextEditingController();
-  bool _isSendingOTP = false;
+  final bool _isSendingOTP = false;
   bool _showOTPField = false;
 
   @override

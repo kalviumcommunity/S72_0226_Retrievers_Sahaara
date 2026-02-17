@@ -107,19 +107,19 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
 }
 
 /// Caregiver Profile Screen - Profile management for caregivers
-class CaregiverProfileScreen extends StatefulWidget {
+class CaregiverProfileScreen extends void StatefulWidget {
   const CaregiverProfileScreen({super.key});
 
   @override
   State<CaregiverProfileScreen> createState() => _CaregiverProfileScreenState();
 }
 
-class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
-  bool _isLoading = false;
+class _CaregiverProfileScreenState extends void State<CaregiverProfileScreen> {
+  bool isLoading = false;
 
-  Future<void> _refreshProfile() async {
+  Future<void> refreshProfile() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
+    setState(() => isLoading = true);
 
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -130,14 +130,14 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
       }
 
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile refreshed')),
         );
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to refresh: $e')),
         );
@@ -148,7 +148,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: _refreshProfile,
+      onRefresh: refreshProfile,
       backgroundColor: AppTheme.white,
       color: AppTheme.primaryColor,
       child: SingleChildScrollView(
@@ -162,23 +162,23 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Profile Header
-                _buildProfileHeader(user),
+                buildProfileHeader(user),
                 const SizedBox(height: 24),
 
                 // Stats Section
-                _buildStats(),
+                buildStats(),
                 const SizedBox(height: 24),
 
                 // Verification Status
-                _buildVerificationStatus(),
+                buildVerificationStatus(),
                 const SizedBox(height: 24),
 
                 // Professional Info
-                _buildProfessionalInfo(),
+                buildProfessionalInfo(),
                 const SizedBox(height: 24),
 
                 // Action Buttons
-                _buildActionButtons(),
+                buildActionButtons(),
               ],
             );
           },
@@ -187,7 +187,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader(dynamic user) {
+  Widget buildProfileHeader(dynamic user) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -266,7 +266,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     );
   }
 
-  Widget _buildStats() {
+  Widget buildStats() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -285,25 +285,25 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
           children: [
-            _buildStatCard(
+            buildStatCard(
               icon: Icons.check_circle,
               label: 'Completed',
               value: '24',
               color: AppTheme.successColor,
             ),
-            _buildStatCard(
+            buildStatCard(
               icon: Icons.star,
               label: 'Rating',
               value: '4.8',
               color: AppTheme.warningColor,
             ),
-            _buildStatCard(
+            buildStatCard(
               icon: Icons.trending_up,
               label: 'This Month',
               value: '₹8,450',
               color: AppTheme.primaryColor,
             ),
-            _buildStatCard(
+            buildStatCard(
               icon: Icons.person,
               label: 'Pet Owners',
               value: '12',
@@ -315,7 +315,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     );
   }
 
-  Widget _buildStatCard({
+  Widget buildStatCard({
     required IconData icon,
     required String label,
     required String value,
@@ -362,7 +362,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     );
   }
 
-  Widget _buildVerificationStatus() {
+  Widget buildVerificationStatus() {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -415,7 +415,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     );
   }
 
-  Widget _buildProfessionalInfo() {
+  Widget buildProfessionalInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -427,15 +427,15 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
               ),
         ),
         const SizedBox(height: 12),
-        _buildInfoItem('Services Offered', 'Dog Walking, Pet Sitting, Daycare'),
-        _buildInfoItem('Experience', '3+ years in pet care'),
-        _buildInfoItem('Hourly Rate', '₹350 - ₹500'),
-        _buildInfoItem('Availability', 'Weekdays & Weekends'),
+        buildInfoItem('Services Offered', 'Dog Walking, Pet Sitting, Daycare'),
+        buildInfoItem('Experience', '3+ years in pet care'),
+        buildInfoItem('Hourly Rate', '₹350 - ₹500'),
+        buildInfoItem('Availability', 'Weekdays & Weekends'),
       ],
     );
   }
 
-  Widget _buildInfoItem(String label, String value) {
+  Widget buildInfoItem(String label, String value) {
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 8),
@@ -475,7 +475,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget buildActionButtons() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
