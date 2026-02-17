@@ -72,6 +72,7 @@ class AppRoutes {
 
   // ============ NOTIFICATION ROUTES ============
   static const String notificationSettings = '/notification-settings';
+  static const String notificationsTest = '/notifications-test';
 
   // ============ ERROR ROUTES ============
   static const String notFound = '/404';
