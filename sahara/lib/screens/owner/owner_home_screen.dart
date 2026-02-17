@@ -7,6 +7,7 @@ import '../common/user_profile_view.dart';
 import '../common/settings_screen.dart';
 import 'pet_list_screen.dart';
 import 'pet_profile_form.dart';
+import 'caregiver_search_screen.dart';
 
 /// Owner home screen with dashboard and navigation
 class OwnerHomeScreen extends StatefulWidget {
@@ -149,7 +150,12 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                 title: const Text('Find Caregivers'),
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Navigate to caregiver search
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CaregiverSearchScreen(),
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -283,7 +289,12 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                 label: 'Find Caregiver',
                 color: Colors.blue,
                 onTap: () {
-                  // TODO: Navigate to caregiver search
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CaregiverSearchScreen(),
+                    ),
+                  );
                 },
               ),
             ),
@@ -528,7 +539,12 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () {
-                    // TODO: Navigate to find caregivers
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CaregiverSearchScreen(),
+                      ),
+                    );
                   },
                   child: const Text('Find a Caregiver'),
                 ),
