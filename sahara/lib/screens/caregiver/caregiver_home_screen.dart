@@ -9,6 +9,7 @@ import 'caregiver_dashboard_screen.dart';
 import 'available_jobs_screen.dart';
 import 'caregiver_schedule_screen.dart';
 import 'caregiver_profile_setup.dart';
+import 'caregiver_bookings_screen.dart';
 
 /// Caregiver home screen with bottom navigation and multiple screens
 class CaregiverHomeScreen extends StatefulWidget {
@@ -30,7 +31,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     _loadData();
     _screens = [
       const CaregiverDashboardScreen(),
-      const AvailableJobsScreen(),
+      const CaregiverBookingsScreen(),
       const CaregiverScheduleScreen(),
       const CaregiverProfileScreen(),
     ];
@@ -86,13 +87,13 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined),
-            activeIcon: Icon(Icons.search),
-            label: 'Jobs',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             activeIcon: Icon(Icons.calendar_today),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.schedule_outlined),
+            activeIcon: Icon(Icons.schedule),
             label: 'Schedule',
           ),
           BottomNavigationBarItem(
