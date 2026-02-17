@@ -9,8 +9,11 @@ import '../common/user_profile_view.dart';
 import '../common/settings_screen.dart';
 import 'pet_list_screen.dart';
 import 'pet_profile_form.dart';
+import 'find_walker_screen.dart';
+import 'my_bookings_screen.dart';
+import 'owner_profile_screen.dart';
 
-/// Owner home screen with dashboard and navigation
+/// Owner home screen with bottom navigation
 class OwnerHomeScreen extends StatefulWidget {
   const OwnerHomeScreen({super.key});
 
@@ -19,10 +22,20 @@ class OwnerHomeScreen extends StatefulWidget {
 }
 
 class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
+  int _currentIndex = 0;
+
+  late List<Widget> _screens;
+
   @override
   void initState() {
     super.initState();
     _loadData();
+    _screens = [
+      _buildDashboardScreen(),
+      const FindWalkerScreen(),
+      const MyBookingsScreen(),
+      const OwnerProfileScreen(),
+    ];
   }
 
   Future<void> _loadData() async {
@@ -42,6 +55,49 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
+      drawer: _buildDrawer(),
+      body: _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppTheme.white,
+        selectedItemColor: AppTheme.primaryColor,
+        unselectedItemColor: AppTheme.gray400,
+        elevation: 8,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search_outlined),
+            activeIcon: Icon(Icons.search),
+            label: 'Find Walker',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardScreen() {
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Sahara Dashboard'),
         centerTitle: true,
@@ -58,7 +114,6 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      drawer: _buildDrawer(),
       body: RefreshIndicator(
         onRefresh: _loadData,
         child: SingleChildScrollView(
@@ -110,7 +165,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
             children: [
               UserAccountsDrawerHeader(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: AppTheme.primaryColor,
                 ),
                 accountName: Text(
                   user?.name ?? 'Pet Owner',
@@ -118,7 +173,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                 ),
                 accountEmail: Text(user?.email ?? ''),
                 currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppTheme.white,
                   backgroundImage: user?.profilePhoto != null
                       ? NetworkImage(user!.profilePhoto!)
                       : null,
@@ -126,7 +181,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                       ? Icon(
                           Icons.person,
                           size: 40,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: AppTheme.primaryColor,
                         )
                       : null,
                 ),
@@ -134,7 +189,34 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
               ListTile(
                 leading: const Icon(Icons.home),
                 title: const Text('Home'),
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 0);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.search),
+                title: const Text('Find Walker'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 1);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_today),
+                title: const Text('My Bookings'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 2);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text('My Profile'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 3);
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.pets),
@@ -149,44 +231,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                   );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: const Text('Bookings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to bookings
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.search),
-                title: const Text('Find Caregivers'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to caregiver search
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.chat_bubble_outline),
-                title: const Text('Messages'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to messages
-                },
-              ),
               const Divider(),
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('My Profile'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserProfileView(),
-                    ),
-                  );
-                },
-              ),
               ListTile(
                 leading: const Icon(Icons.settings),
                 title: const Text('Settings'),
@@ -214,7 +259,18 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
       ),
     );
   }
-begin: Alignment.topLeft,
+
+  Widget _buildWelcomeCard() {
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, child) {
+        final user = userProvider.currentUser;
+        final firstName = user?.name.split(' ').first ?? 'there';
+        
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
                 AppTheme.primaryColor,
@@ -277,7 +333,79 @@ begin: Alignment.topLeft,
                 ),
               ),
             ],
-          ),Section() {
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatsSection() {
+    return Consumer<PetProvider>(
+      builder: (context, petProvider, child) {
+        final petCount = petProvider.pets.length;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Overview',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.black,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              children: [
+                StatsCard(
+                  icon: Icons.pets,
+                  title: 'Total Pets',
+                  value: petCount.toString(),
+                  color: AppTheme.primaryColor,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PetListScreen(),
+                      ),
+                    );
+                  },
+                ),
+                StatsCard(
+                  icon: Icons.calendar_today,
+                  title: 'Bookings',
+                  value: '0',
+                  color: AppTheme.secondaryColor,
+                  onTap: () {
+                    setState(() => _currentIndex = 2);
+                  },
+                ),
+                StatsCard(
+                  icon: Icons.favorite,
+                  title: 'Favorites',
+                  value: '0',
+                  color: AppTheme.errorColor,
+                ),
+                StatsCard(
+                  icon: Icons.star,
+                  title: 'Rating',
+                  value: '4.8',
+                  color: AppTheme.warningColor,
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickActionsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -290,97 +418,36 @@ begin: Alignment.topLeft,
         ),
         const SizedBox(height: 12),
         GridView.count(
-          crossAxisCount: 4,
+          crossAxisCount: 3,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.85,
+          childAspectRatio: 0.8,
           children: [
             QuickActionButton(
               icon: Icons.search,
-              label: 'Find\nCaregiver',
+              label: 'Find\nWalker',
               color: AppTheme.infoColor,
               onTap: () {
-                // TODO: Navigate to caregiver search
+                setState(() => _currentIndex = 1);
               },
             ),
             QuickActionButton(
               icon: Icons.calendar_today,
-              label: 'Book\nService',
+              label: 'My\nBookings',
               color: AppTheme.successColor,
               onTap: () {
-                // TODO: Navigate to booking
+                setState(() => _currentIndex = 2);
               },
             ),
             QuickActionButton(
-              icon: Icons.pets,
-              label: 'My\nPets',
-              color: AppTheme.primaryColor,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PetListScreen(),
-                  ),
-                );
-              },
-            ),
-            QuickActionButton(
-              icon: Icons.chat_bubble,
-              label: 'Messages',
+              icon: Icons.person,
+              label: 'Profile',
               color: AppTheme.accentColor,
               onTap: () {
-                // TODO: Navigate to messages
+                setState(() => _currentIndex = 3);
               },
-            ),
-          ],
-        ),
-      ]           // TODO: Navigate to caregiver search
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.calendar_today,
-                label: 'Book Service',
-                color: Colors.green,
-                onTap: () {
-                  // TODO: Navigate to booking
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.pets,
-                label: 'My Pets',
-                color: Colors.orange,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PetListScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.chat_bubble,
-                label: 'Messages',
-                color: Colors.purple,
-                onTap: () {
-                  // TODO: Navigate to messages
-                },
-              ),
             ),
           ],
         ),
@@ -388,21 +455,26 @@ begin: Alignment.topLeft,
     );
   }
 
-  Widget _buildActionCard({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Bord  color: AppTheme.black,
+  Widget _buildMyPetsSection() {
+    return Consumer<PetProvider>(
+      builder: (context, petProvider, child) {
+        if (petProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final pets = petProvider.pets;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'My Pets',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.black,
                       ),
                 ),
                 if (pets.isNotEmpty)
@@ -447,47 +519,7 @@ begin: Alignment.topLeft,
                       pet: pet,
                       onTap: () {
                         // TODO: Navigate to pet detail
-                      }lDirection: Axis.horizontal,
-                  itemCount: pets.length > 5 ? 5 : pets.length,
-                  itemBuilder: (context, index) {
-                    final pet = pets[index];
-                    return Container(
-                      width: 100,
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Column(
-                        children: [
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.grey[200],
-                            backgroundImage: pet.photo != null
-                                ? NetworkImage(pet.photo!)
-                                : null,
-                            child: pet.photo == null
-                                ? Icon(Icons.pets, size: 32, color: Colors.grey[400])
-                                : null,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            pet.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            pet.breed,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
+                      },
                     );
                   },
                 ),
@@ -498,51 +530,7 @@ begin: Alignment.topLeft,
     );
   }
 
-  Widget _buildUpcomingBookings() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Upcoming Bookings',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Column(
-              children: [
-                Icon(Icons.calendar_today_outlined, size: 48, color: Colors.grey[400]),
-                const SizedBox(height: 12),
-                Text(
-                  'No upcoming bookings',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () {
-                    // TODO: Navigate to find caregivers
-                  },
-                  child: const Text('Find a Caregiver'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-Section() {
+  Widget _buildUpcomingBookingsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -560,7 +548,7 @@ Section() {
           subtitle: 'Book a caregiver for your pets',
           buttonText: 'Find Caregiver',
           onButtonTap: () {
-            // TODO: Navigate to find caregivers
+            setState(() => _currentIndex = 1);
           },
         ),
       ],
@@ -584,4 +572,9 @@ Section() {
           title: 'Tip of the Day',
           message: 'Keep your pet\'s profile updated for better caregiver matches',
           backgroundColor: AppTheme.warningColor,
-          textColor: AppTheme.warningColor
+          textColor: AppTheme.warningColor,
+        ),
+      ],
+    );
+  }
+}
