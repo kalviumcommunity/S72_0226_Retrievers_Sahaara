@@ -9,6 +9,7 @@ import '../common/user_profile_view.dart';
 import '../common/settings_screen.dart';
 import 'pet_list_screen.dart';
 import 'pet_profile_form.dart';
+import 'bookings_list_screen.dart';
 import 'find_walker_screen.dart';
 import 'my_bookings_screen.dart';
 import 'owner_profile_screen.dart';
