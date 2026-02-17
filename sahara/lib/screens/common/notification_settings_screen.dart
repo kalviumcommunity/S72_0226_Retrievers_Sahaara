@@ -188,7 +188,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              _fcmToken!.substring(0, 50) + '...',
+              '${_fcmToken!.substring(0, 50)}...',
               style: const TextStyle(
                 fontSize: 11,
                 fontFamily: 'monospace',
@@ -303,7 +303,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryColor,
+            activeThumbColor: AppTheme.primaryColor,
           ),
         ],
       ),

@@ -214,7 +214,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                 }
 
                 return DropdownButtonFormField<String>(
-                  value: _selectedPetId,
+                  initialValue: _selectedPetId,
                   decoration: const InputDecoration(
                     hintText: 'Choose a pet',
                   ),

@@ -7,6 +7,8 @@ import '../../models/booking_model.dart';
 import '../../models/user_model.dart';
 import '../../models/pet_model.dart';
 import '../common/activity_feed_screen.dart';
+import 'add_review_screen.dart';
+import '../../providers/review_provider.dart';
 
 /// Screen for viewing booking details
 class BookingDetailScreen extends StatefulWidget {
@@ -123,6 +125,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             const SizedBox(height: 16),
             if (_booking!.status == 'in-progress' || _booking!.status == 'completed')
               _buildActivityFeedButton(),
+            const SizedBox(height: 16),
+            if (_booking!.status == 'completed')
+              _buildReviewButton(),
           ],
         ),
       ),
@@ -573,5 +578,86 @@ class _CancelBookingDialogState extends State<_CancelBookingDialog> {
           ),
         ),
       ),
+    );
+  }
+
+
+  Widget _buildReviewButton() {
+    return FutureBuilder(
+      future: Provider.of<ReviewProvider>(context, listen: false)
+          .getReviewByBookingId(widget.bookingId),
+      builder: (context, snapshot) {
+        final hasReview = snapshot.data != null;
+
+        return Card(
+          child: InkWell(
+            onTap: hasReview
+                ? null
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddReviewScreen(
+                          bookingId: widget.bookingId,
+                          caregiverId: _booking!.caregiverId,
+                          petId: _booking!.petId,
+                        ),
+                      ),
+                    ).then((result) {
+                      if (result == true) {
+                        setState(() {});
+                      }
+                    });
+                  },
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: hasReview
+                          ? Colors.grey.withValues(alpha: 0.1)
+                          : Colors.amber.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      hasReview ? Icons.check_circle : Icons.rate_review,
+                      color: hasReview ? Colors.grey : Colors.amber,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          hasReview ? 'Review Submitted' : 'Write a Review',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: hasReview ? Colors.grey : null,
+                          ),
+                        ),
+                        Text(
+                          hasReview
+                              ? 'Thank you for your feedback'
+                              : 'Share your experience with this caregiver',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!hasReview) const Icon(Icons.arrow_forward_ios, size: 16),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }

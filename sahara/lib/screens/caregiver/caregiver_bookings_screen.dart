@@ -184,7 +184,7 @@ class _CaregiverBookingsScreenState extends State<CaregiverBookingsScreen>
                   const Spacer(),
                   const Icon(Icons.currency_rupee, size: 16, color: Colors.grey),
                   Text(
-                    '${booking.totalAmount.toStringAsFixed(0)}',
+                    booking.totalAmount.toStringAsFixed(0),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

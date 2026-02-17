@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import '../../providers/caregiver_provider.dart';
 import '../../models/caregiver_model.dart';
 import '../../models/user_model.dart';
-import '../../widgets/loading_skeleton.dart';
 import '../owner/create_booking_screen.dart';
+import '../common/reviews_list_screen.dart';
 
 /// Screen for viewing detailed caregiver profile
 class CaregiverDetailScreen extends StatefulWidget {
@@ -131,13 +131,44 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
               'Reviews',
               Column(
                 children: [
-                  const Text('No reviews yet'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${caregiver.stats.totalReviews} reviews',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            caregiver.stats.averageRating.toStringAsFixed(1),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: View all reviews
-                    },
-                    child: const Text('View All Reviews'),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReviewsListScreen(
+                              caregiverId: caregiver.caregiverId,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('View All Reviews'),
+                    ),
                   ),
                 ],
               ),

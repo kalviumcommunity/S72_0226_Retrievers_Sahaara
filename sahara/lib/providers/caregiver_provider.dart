@@ -1,6 +1,4 @@
 import 'package:flutter/foundation.dart';
-import '../models/caregiver_model.dart';
-import '../models/user_model.dart';
 import '../repositories/caregiver_repository.dart';
 
 /// Provider for caregiver state management

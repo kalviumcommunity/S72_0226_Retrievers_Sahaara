@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/validators.dart';
 import '../../utils/constants.dart';
-import '../../utils/app_theme.dart';
 import '../../widgets/google_sign_in_button.dart';
 import '../common/profile_setup_screen.dart';
 
