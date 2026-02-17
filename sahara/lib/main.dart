@@ -36,7 +36,6 @@ class SaharaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PetProvider()),
         ChangeNotifierProvider(create: (_) => NotificationsProvider()),
         // TODO: Add more providers as they are created
-        // ChangeNotifierProvider(create: (_) => CaregiverProvider()),
         // ChangeNotifierProvider(create: (_) => BookingProvider()),
       ],
       child: MaterialApp(
