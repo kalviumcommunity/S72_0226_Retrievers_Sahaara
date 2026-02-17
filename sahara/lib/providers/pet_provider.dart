@@ -117,6 +117,17 @@ class PetProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Get pet by ID
+  Future<PetModel?> getPetById(String petId) async {
+    try {
+      return await _petRepository.getPet(petId);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
   /// Clear data
   void clear() {
     _pets = [];

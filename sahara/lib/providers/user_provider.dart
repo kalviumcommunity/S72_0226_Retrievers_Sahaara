@@ -68,6 +68,17 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Get user by ID
+  Future<UserModel?> getUserById(String userId) async {
+    try {
+      return await _userRepository.getUserProfile(userId);
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
   /// Clear user data
   void clear() {
     _currentUser = null;
