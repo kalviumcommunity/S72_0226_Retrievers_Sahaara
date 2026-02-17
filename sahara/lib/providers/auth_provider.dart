@@ -130,6 +130,58 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Sign in with phone number
+  Future<void> signInWithPhone({
+    required String phoneNumber,
+    required Function(String) onCodeSent,
+    required Function(String) onError,
+    required Function(dynamic) onVerificationComplete,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      await _authRepository.signInWithPhone(
+        phoneNumber: phoneNumber,
+        onCodeSent: onCodeSent,
+        onError: (error) {
+          _error = error;
+          onError(error);
+        },
+        onVerificationComplete: onVerificationComplete,
+      );
+      _setLoading(false);
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+    }
+  }
+
+  /// Verify OTP
+  Future<bool> verifyOTP({
+    required String otp,
+    required String name,
+    required String role,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final user = await _authRepository.verifyOTP(
+        otp: otp,
+        name: name,
+        role: role,
+      );
+      _user = user;
+      _setLoading(false);
+      return user != null;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      return false;
+    }
+  }
+
   /// Set loading state
   void _setLoading(bool value) {
     _isLoading = value;

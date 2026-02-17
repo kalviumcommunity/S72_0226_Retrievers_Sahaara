@@ -3,13 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/pet_provider.dart';
+import '../../utils/app_theme.dart';
+import '../../widgets/dashboard_widgets.dart';
 import '../common/user_profile_view.dart';
 import '../common/settings_screen.dart';
 import 'pet_list_screen.dart';
 import 'pet_profile_form.dart';
-import 'caregiver_search_screen.dart';
+import 'find_walker_screen.dart';
+import 'my_bookings_screen.dart';
+import 'owner_profile_screen.dart';
 
-/// Owner home screen with dashboard and navigation
+/// Owner home screen with bottom navigation
 class OwnerHomeScreen extends StatefulWidget {
   const OwnerHomeScreen({super.key});
 
@@ -18,10 +22,20 @@ class OwnerHomeScreen extends StatefulWidget {
 }
 
 class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
+  int _currentIndex = 0;
+
+  late List<Widget> _screens;
+
   @override
   void initState() {
     super.initState();
     _loadData();
+    _screens = [
+      _buildDashboardScreen(),
+      const FindWalkerScreen(),
+      const MyBookingsScreen(),
+      const OwnerProfileScreen(),
+    ];
   }
 
   Future<void> _loadData() async {
@@ -40,9 +54,56 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      drawer: _buildDrawer(),
+      body: _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppTheme.white,
+        selectedItemColor: AppTheme.primaryColor,
+        unselectedItemColor: AppTheme.gray400,
+        elevation: 8,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search_outlined),
+            activeIcon: Icon(Icons.search),
+            label: 'Find Walker',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardScreen() {
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('Sahara'),
+        title: const Text('Sahara Dashboard'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: AppTheme.white,
+        foregroundColor: AppTheme.black,
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
@@ -50,24 +111,29 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
               // TODO: Navigate to notifications
             },
           ),
+          const SizedBox(width: 8),
         ],
       ),
-      drawer: _buildDrawer(),
       body: RefreshIndicator(
         onRefresh: _loadData,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildWelcomeCard(),
               const SizedBox(height: 24),
-              _buildQuickActions(),
+              _buildStatsSection(),
+              const SizedBox(height: 24),
+              _buildQuickActionsSection(),
               const SizedBox(height: 24),
               _buildMyPetsSection(),
               const SizedBox(height: 24),
-              _buildUpcomingBookings(),
+              _buildUpcomingBookingsSection(),
+              const SizedBox(height: 24),
+              _buildHelpSection(),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -81,6 +147,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
             ),
           ).then((_) => _loadData());
         },
+        backgroundColor: AppTheme.primaryColor,
         icon: const Icon(Icons.add),
         label: const Text('Add Pet'),
       ),
@@ -98,7 +165,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
             children: [
               UserAccountsDrawerHeader(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: AppTheme.primaryColor,
                 ),
                 accountName: Text(
                   user?.name ?? 'Pet Owner',
@@ -106,7 +173,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                 ),
                 accountEmail: Text(user?.email ?? ''),
                 currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppTheme.white,
                   backgroundImage: user?.profilePhoto != null
                       ? NetworkImage(user!.profilePhoto!)
                       : null,
@@ -114,7 +181,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                       ? Icon(
                           Icons.person,
                           size: 40,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: AppTheme.primaryColor,
                         )
                       : null,
                 ),
@@ -122,7 +189,34 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
               ListTile(
                 leading: const Icon(Icons.home),
                 title: const Text('Home'),
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 0);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.search),
+                title: const Text('Find Walker'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 1);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_today),
+                title: const Text('My Bookings'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 2);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text('My Profile'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 3);
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.pets),
@@ -137,49 +231,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                   );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: const Text('Bookings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to bookings
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.search),
-                title: const Text('Find Caregivers'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CaregiverSearchScreen(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.chat_bubble_outline),
-                title: const Text('Messages'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to messages
-                },
-              ),
               const Divider(),
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('My Profile'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserProfileView(),
-                    ),
-                  );
-                },
-              ),
               ListTile(
                 leading: const Icon(Icons.settings),
                 title: const Text('Settings'),
@@ -218,12 +270,21 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
               colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                AppTheme.primaryColor,
+                AppTheme.primaryDark,
               ],
             ),
             borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -234,34 +295,42 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                     Text(
                       'Welcome back,',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 16,
+                        color: AppTheme.white.withValues(alpha: 0.85),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       firstName,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
+                        color: AppTheme.white,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
-                      'Your pets are waiting for you!',
+                      'Your pets are waiting for you! 🐾',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: AppTheme.white.withValues(alpha: 0.85),
                         fontSize: 14,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
-                Icons.pets,
-                size: 60,
-                color: Colors.white,
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.pets,
+                  size: 48,
+                  color: AppTheme.white,
+                ),
               ),
             ],
           ),
@@ -270,7 +339,73 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildStatsSection() {
+    return Consumer<PetProvider>(
+      builder: (context, petProvider, child) {
+        final petCount = petProvider.pets.length;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Overview',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.black,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              children: [
+                StatsCard(
+                  icon: Icons.pets,
+                  title: 'Total Pets',
+                  value: petCount.toString(),
+                  color: AppTheme.primaryColor,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PetListScreen(),
+                      ),
+                    );
+                  },
+                ),
+                StatsCard(
+                  icon: Icons.calendar_today,
+                  title: 'Bookings',
+                  value: '0',
+                  color: AppTheme.secondaryColor,
+                  onTap: () {
+                    setState(() => _currentIndex = 2);
+                  },
+                ),
+                StatsCard(
+                  icon: Icons.favorite,
+                  title: 'Favorites',
+                  value: '0',
+                  color: AppTheme.errorColor,
+                ),
+                StatsCard(
+                  icon: Icons.star,
+                  title: 'Rating',
+                  value: '4.8',
+                  color: AppTheme.warningColor,
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickActionsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -278,106 +413,45 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
           'Quick Actions',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: AppTheme.black,
               ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.search,
-                label: 'Find Caregiver',
-                color: Colors.blue,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CaregiverSearchScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.calendar_today,
-                label: 'Book Service',
-                color: Colors.green,
-                onTap: () {
-                  // TODO: Navigate to booking
-                },
-              ),
-            ),
-          ],
         ),
         const SizedBox(height: 12),
-        Row(
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 0.8,
           children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.pets,
-                label: 'My Pets',
-                color: Colors.orange,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PetListScreen(),
-                    ),
-                  );
-                },
-              ),
+            QuickActionButton(
+              icon: Icons.search,
+              label: 'Find\nWalker',
+              color: AppTheme.infoColor,
+              onTap: () {
+                setState(() => _currentIndex = 1);
+              },
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.chat_bubble,
-                label: 'Messages',
-                color: Colors.purple,
-                onTap: () {
-                  // TODO: Navigate to messages
-                },
-              ),
+            QuickActionButton(
+              icon: Icons.calendar_today,
+              label: 'My\nBookings',
+              color: AppTheme.successColor,
+              onTap: () {
+                setState(() => _currentIndex = 2);
+              },
+            ),
+            QuickActionButton(
+              icon: Icons.person,
+              label: 'Profile',
+              color: AppTheme.accentColor,
+              onTap: () {
+                setState(() => _currentIndex = 3);
+              },
             ),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildActionCard({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -400,103 +474,52 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                   'My Pets',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.black,
                       ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PetListScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text('View All'),
-                ),
+                if (pets.isNotEmpty)
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PetListScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('View All'),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
             if (pets.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(Icons.pets, size: 48, color: Colors.grey[400]),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No pets yet',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PetProfileForm(),
-                            ),
-                          ).then((_) => _loadData());
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add Your First Pet'),
-                      ),
-                    ],
-                  ),
-                ),
+              DashboardEmptyState(
+                icon: Icons.pets,
+                title: 'No pets yet',
+                subtitle: 'Add your first pet to get started',
+                buttonText: 'Add Pet',
+                onButtonTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PetProfileForm(),
+                    ),
+                  ).then((_) => _loadData());
+                },
               )
             else
               SizedBox(
-                height: 120,
+                height: 140,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: pets.length > 5 ? 5 : pets.length,
                   itemBuilder: (context, index) {
                     final pet = pets[index];
-                    return Container(
-                      width: 100,
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Column(
-                        children: [
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.grey[200],
-                            backgroundImage: pet.photo != null
-                                ? NetworkImage(pet.photo!)
-                                : null,
-                            child: pet.photo == null
-                                ? Icon(Icons.pets, size: 32, color: Colors.grey[400])
-                                : null,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            pet.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            pet.breed,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
+                    return DashboardPetCard(
+                      pet: pet,
+                      onTap: () {
+                        // TODO: Navigate to pet detail
+                      },
                     );
                   },
                 ),
@@ -507,7 +530,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
     );
   }
 
-  Widget _buildUpcomingBookings() {
+  Widget _buildUpcomingBookingsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -515,42 +538,41 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
           'Upcoming Bookings',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: AppTheme.black,
               ),
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Column(
-              children: [
-                Icon(Icons.calendar_today_outlined, size: 48, color: Colors.grey[400]),
-                const SizedBox(height: 12),
-                Text(
-                  'No upcoming bookings',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CaregiverSearchScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text('Find a Caregiver'),
-                ),
-              ],
-            ),
-          ),
+        DashboardEmptyState(
+          icon: Icons.calendar_today_outlined,
+          title: 'No bookings yet',
+          subtitle: 'Book a caregiver for your pets',
+          buttonText: 'Find Caregiver',
+          onButtonTap: () {
+            setState(() => _currentIndex = 1);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHelpSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Help & Tips',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.black,
+              ),
+        ),
+        const SizedBox(height: 12),
+        InfoBanner(
+          icon: Icons.lightbulb,
+          title: 'Tip of the Day',
+          message: 'Keep your pet\'s profile updated for better caregiver matches',
+          backgroundColor: AppTheme.warningColor,
+          textColor: AppTheme.warningColor,
         ),
       ],
     );

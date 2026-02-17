@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/validators.dart';
 import '../../utils/constants.dart';
+import '../../utils/app_theme.dart';
+import '../../widgets/google_sign_in_button.dart';
 import '../common/profile_setup_screen.dart';
 
 /// Signup screen for new users
@@ -264,27 +266,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 // Google Sign Up Button
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
-                    return OutlinedButton.icon(
-                      onPressed: authProvider.isLoading || !_acceptedTerms
-                          ? null
-                          : _handleGoogleSignUp,
-                      icon: Image.asset(
-                        'assets/icons/google.png',
-                        height: 24,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.g_mobiledata, size: 24);
-                        },
-                      ),
-                      label: const Text(
-                        'Continue with Google',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                    return GoogleSignInButton(
+                      onPressed: _handleGoogleSignUp,
+                      isLoading: authProvider.isLoading,
+                      text: 'Continue with Google',
+                      variant: ButtonVariant.outlined,
                     );
                   },
                 ),
