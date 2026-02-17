@@ -4,6 +4,7 @@ class AppConstants {
   static const String appName = 'Sahara';
   static const String appVersion = '1.0.0';
   static const String appTagline = 'Trusted Pet Discovery & Monitoring';
+  static const String appLogoPath = 'assets/images/app_logo.png';
 
   // Firebase Collections
   static const String usersCollection = 'users';

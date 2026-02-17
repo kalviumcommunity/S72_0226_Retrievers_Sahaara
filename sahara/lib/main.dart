@@ -6,6 +6,7 @@ import 'providers/auth_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/pet_provider.dart';
 import 'screens/common/home_router.dart';
+import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,32 +34,12 @@ class SaharaApp extends StatelessWidget {
         // ChangeNotifierProvider(create: (_) => BookingProvider()),
       ],
       child: MaterialApp(
-      title: 'Sahara',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6366F1),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 0,
-        ),
-        cardTheme: const CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          filled: true,
-        ),
-      ),
-      home: const SplashScreen(),
+        title: 'Sahara',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.light,
+        home: const SplashScreen(),
       ),
     );
   }
@@ -71,17 +52,40 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
+    _initializeAnimations();
     _navigateToHome();
   }
 
+  void _initializeAnimations() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
+    );
+
+    _animationController.forward();
+  }
+
   Future<void> _navigateToHome() async {
-    // Wait for 2 seconds
-    await Future.delayed(const Duration(seconds: 2));
-    
+    // Wait for 3 seconds
+    await Future.delayed(const Duration(seconds: 3));
+
     if (mounted) {
       // Navigate to Home Router (checks auth and role)
       Navigator.pushReplacement(
@@ -89,6 +93,12 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (context) => const HomeRouter()),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -100,74 +110,84 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
+              AppTheme.primaryColor,
+              AppTheme.primaryDark,
             ],
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // App Icon
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App Icon with shadow
+                  Container(
+                    padding: const EdgeInsets.all(AppTheme.paddingLarge),
+                    decoration: BoxDecoration(
+                      color: AppTheme.white,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusExtraLarge),
+                      boxShadow: AppTheme.shadowElevationExtraLarge,
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.pets,
-                  size: 80,
-                  color: Color(0xFF6366F1),
-                ),
+                    child: const Icon(
+                      Icons.pets,
+                      size: 80,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing32),
+
+                  // App Name
+                  const Text(
+                    'Sahara',
+                    style: TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.white,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing12),
+
+                  // Tagline
+                  const Text(
+                    'Trusted Pet Discovery & Monitoring',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white70,
+                      letterSpacing: 0.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing48),
+
+                  // Loading Indicator
+                  const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppTheme.white),
+                      strokeWidth: 3,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing20),
+
+                  // Loading Text
+                  const Text(
+                    'Loading...',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
-              
-              // App Name
-              const Text(
-                'Sahara',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(height: 8),
-              
-              // Tagline
-              const Text(
-                'Trusted Pet Discovery & Monitoring',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 48),
-              
-              // Loading Indicator
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-              const SizedBox(height: 16),
-              
-              const Text(
-                'Loading...',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
