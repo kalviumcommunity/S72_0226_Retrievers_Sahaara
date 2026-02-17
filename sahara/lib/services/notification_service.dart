@@ -249,6 +249,181 @@ class NotificationService {
     }
   }
 
+  /// Show booking notification
+  Future<void> showBookingNotification({
+    required String petName,
+    required String ownerName,
+    required String service,
+    String? payload,
+  }) async {
+    try {
+      final title = 'New Booking Request';
+      final body = '$petName • $service';
+      final bigBody = 'Pet Owner: $ownerName\nService: $service\nPet: $petName';
+
+      await _localNotificationsPlugin.show(
+        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title,
+        body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'sahara_notifications',
+            'Sahara Notifications',
+            channelDescription: 'Notifications for Sahara Pet Care App',
+            smallIcon: '@mipmap/ic_launcher',
+            priority: Priority.high,
+            importance: Importance.max,
+            styleInformation: BigTextStyleInformation(bigBody),
+            ticker: title,
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        payload: payload,
+      );
+      debugPrint('✅ Booking notification sent');
+    } catch (e) {
+      debugPrint('❌ Error sending booking notification: $e');
+    }
+  }
+
+  /// Show message notification
+  Future<void> showMessageNotification({
+    required String senderName,
+    required String message,
+    String? payload,
+  }) async {
+    try {
+      final title = 'Message from $senderName';
+
+      await _localNotificationsPlugin.show(
+        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title,
+        message,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'sahara_notifications',
+            'Sahara Notifications',
+            channelDescription: 'Notifications for Sahara Pet Care App',
+            smallIcon: '@mipmap/ic_launcher',
+            priority: Priority.high,
+            importance: Importance.max,
+            ticker: title,
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        payload: payload,
+      );
+      debugPrint('✅ Message notification sent');
+    } catch (e) {
+      debugPrint('❌ Error sending message notification: $e');
+    }
+  }
+
+  /// Show review notification
+  Future<void> showReviewNotification({
+    required String reviewerName,
+    required double rating,
+    String? payload,
+  }) async {
+    try {
+      final stars = '⭐' * rating.toInt();
+      final title = 'New Review';
+      final body = '$reviewerName rated ${rating.toStringAsFixed(1)} $stars';
+
+      await _localNotificationsPlugin.show(
+        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title,
+        body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'sahara_notifications',
+            'Sahara Notifications',
+            channelDescription: 'Notifications for Sahara Pet Care App',
+            smallIcon: '@mipmap/ic_launcher',
+            priority: Priority.high,
+            importance: Importance.max,
+            ticker: title,
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        payload: payload,
+      );
+      debugPrint('✅ Review notification sent');
+    } catch (e) {
+      debugPrint('❌ Error sending review notification: $e');
+    }
+  }
+
+  /// Show earnings notification
+  Future<void> showEarningsNotification({
+    required String amount,
+    required String reason,
+    String? payload,
+  }) async {
+    try {
+      final title = 'Earnings Update';
+      final body = 'You earned ₹$amount • $reason';
+
+      await _localNotificationsPlugin.show(
+        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title,
+        body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'sahara_notifications',
+            'Sahara Notifications',
+            channelDescription: 'Notifications for Sahara Pet Care App',
+            smallIcon: '@mipmap/ic_launcher',
+            priority: Priority.high,
+            importance: Importance.max,
+            ticker: title,
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        payload: payload,
+      );
+      debugPrint('✅ Earnings notification sent');
+    } catch (e) {
+      debugPrint('❌ Error sending earnings notification: $e');
+    }
+  }
+
+  /// Cancel a notification by ID
+  Future<void> cancelNotification(int id) async {
+    try {
+      await _localNotificationsPlugin.cancel(id);
+      debugPrint('✅ Notification cancelled: $id');
+    } catch (e) {
+      debugPrint('❌ Error cancelling notification: $e');
+    }
+  }
+
+  /// Cancel all notifications
+  Future<void> cancelAllNotifications() async {
+    try {
+      await _localNotificationsPlugin.cancelAll();
+      debugPrint('✅ All notifications cancelled');
+    } catch (e) {
+      debugPrint('❌ Error cancelling all notifications: $e');
+    }
+  }
+
   /// Subscribe to topic for targeted notifications
   Future<void> subscribeTopic(String topic) async {
     try {
