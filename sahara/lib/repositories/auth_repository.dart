@@ -1,12 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/phone_auth_service.dart';
 
 /// Repository for handling authentication operations
 class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final PhoneAuthService _phoneAuthService = PhoneAuthService();
 
   /// Get current user
   User? get currentUser => _auth.currentUser;
@@ -144,6 +146,52 @@ class AuthRepository {
       throw _handleAuthException(e);
     } catch (e) {
       throw Exception('Failed to send password reset email: $e');
+    }
+  }
+
+  /// Sign in with phone number
+  Future<void> signInWithPhone({
+    required String phoneNumber,
+    required Function(String) onCodeSent,
+    required Function(String) onError,
+    required Function(PhoneAuthCredential) onVerificationComplete,
+  }) async {
+    try {
+      await _phoneAuthService.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        onCodeSent: onCodeSent,
+        onError: onError,
+        onVerificationComplete: onVerificationComplete,
+      );
+    } catch (e) {
+      onError(e.toString());
+    }
+  }
+
+  /// Verify OTP and sign in
+  Future<User?> verifyOTP({
+    required String otp,
+    required String name,
+    required String role,
+  }) async {
+    try {
+      final user = await _phoneAuthService.signInWithOTP(otp);
+      
+      if (user != null) {
+        await user.updateDisplayName(name);
+        
+        // Create user document
+        await _createUserDocument(
+          userId: user.uid,
+          email: user.email ?? '',
+          name: name,
+          role: role,
+        );
+      }
+      
+      return user;
+    } catch (e) {
+      throw Exception('OTP verification failed: $e');
     }
   }
 
