@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Google OAuth Client ID - Configure in Firebase Console -->
+    <!-- 
+    To get your OAuth Client ID:
+    1. Go to Firebase Console (https://console.firebase.google.com/)
+    2. Select your project
+    3. Go to Project Settings
+    4. Under "Service Accounts" tab, click "Generate new private key"
+    5. Or in "OAuth 2.0 Credentials", create OAuth 2.0 Client IDs for Android
+    
+    Add SHA-1 fingerprint of your signing key:
+    1. Run: keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+    2. Copy the SHA-1 fingerprint
+    3. Add it to Firebase Console under Project Settings > Your App > SHA certificate fingerprints
+    -->
+    <string name="google_client_id" translatable="false">YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com</string>
+</resources>

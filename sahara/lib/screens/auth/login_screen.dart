@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/validators.dart';
 import '../../utils/constants.dart';
+import '../../utils/app_theme.dart';
+import '../../widgets/google_sign_in_button.dart';
 
 /// Login screen for existing users
 class LoginScreen extends StatefulWidget {
@@ -171,25 +173,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Google Sign In Button
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
-                    return OutlinedButton.icon(
-                      onPressed: authProvider.isLoading ? null : _handleGoogleSignIn,
-                      icon: Image.asset(
-                        'assets/icons/google.png',
-                        height: 24,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.g_mobiledata, size: 24);
-                        },
-                      ),
-                      label: const Text(
-                        'Continue with Google',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                    return GoogleSignInButton(
+                      onPressed: _handleGoogleSignIn,
+                      isLoading: authProvider.isLoading,
+                      text: 'Continue with Google',
+                      variant: ButtonVariant.outlined,
                     );
                   },
                 ),
