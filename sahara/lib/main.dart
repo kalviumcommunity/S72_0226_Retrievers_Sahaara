@@ -7,6 +7,7 @@ import 'providers/user_provider.dart';
 import 'providers/pet_provider.dart';
 import 'utils/app_theme.dart';
 import 'widgets/auth_wrapper.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize Firebase Cloud Messaging
+  await NotificationService().initialize();
   
   runApp(const SaharaApp());
 }

@@ -70,6 +70,9 @@ class AppRoutes {
   static const String privacyPolicy = '/privacy-policy';
   static const String termsAndConditions = '/terms-and-conditions';
 
+  // ============ NOTIFICATION ROUTES ============
+  static const String notificationSettings = '/notification-settings';
+
   // ============ ERROR ROUTES ============
   static const String notFound = '/404';
   static const String error = '/error';
