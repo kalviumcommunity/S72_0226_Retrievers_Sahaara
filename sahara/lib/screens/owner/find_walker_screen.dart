@@ -12,7 +12,27 @@ class FindWalkerScreen extends StatefulWidget {
 
 class _FindWalkerScreenState extends State<FindWalkerScreen> {
   String _selectedFilter = 'All';
+  bool _isLoading = false;
   final List<String> _filters = ['All', 'Near Me', 'Ratings', 'Available'];
+
+  Future<void> _refreshWalkers() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to refresh: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,62 +44,77 @@ class _FindWalkerScreenState extends State<FindWalkerScreen> {
         foregroundColor: AppTheme.black,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search bar
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search by name or location',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.borderColor),
+      body: RefreshIndicator(
+        onRefresh: _refreshWalkers,
+        backgroundColor: AppTheme.white,
+        color: AppTheme.primaryColor,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                enabled: !_isLoading,
+                decoration: InputDecoration(
+                  hintText: 'Search by name or location',
+                  prefixIcon: _isLoading
+                      ? const SizedBox(
+                          width: 4,
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.borderColor),
+                  ),
+                  filled: true,
+                  fillColor: AppTheme.white,
                 ),
-                filled: true,
-                fillColor: AppTheme.white,
               ),
-            ),
-            const SizedBox(height: 16),
-            // Filters
-            SizedBox(
-              height: 40,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _filters.length,
-                itemBuilder: (context, index) {
-                  final filter = _filters[index];
-                  final isSelected = _selectedFilter == filter;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(filter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilter = selected ? filter : 'All';
-                        });
-                      },
-                      backgroundColor: AppTheme.white,
-                      selectedColor: AppTheme.primaryColor,
-                      labelStyle: TextStyle(
-                        color: isSelected ? AppTheme.white : AppTheme.gray600,
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _filters.length,
+                  itemBuilder: (context, index) {
+                    final filter = _filters[index];
+                    final isSelected = _selectedFilter == filter;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(filter),
+                        selected: isSelected,
+                        onSelected: _isLoading
+                            ? null
+                            : (selected) {
+                                setState(() {
+                                  _selectedFilter = selected ? filter : 'All';
+                                });
+                                _refreshWalkers();
+                              },
+                        backgroundColor: AppTheme.white,
+                        selectedColor: AppTheme.primaryColor,
+                        labelStyle: TextStyle(
+                          color: isSelected ? AppTheme.white : AppTheme.gray600,
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            // Caregiver list
-            DashboardEmptyState(
-              icon: Icons.person_search,
-              title: 'No caregivers found',
-              subtitle: 'Adjust your filters or check back later',
-            ),
-          ],
+              const SizedBox(height: 16),
+              DashboardEmptyState(
+                icon: Icons.person_search,
+                title: _isLoading ? 'Loading caregivers...' : 'No caregivers found',
+                subtitle: _isLoading ? 'Please wait' : 'Adjust your filters or check back later',
+              ),
+            ],
+          ),
         ),
       ),
     );

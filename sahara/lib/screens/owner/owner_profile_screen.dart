@@ -13,6 +13,38 @@ class OwnerProfileScreen extends StatefulWidget {
 }
 
 class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
+  bool _isLoading = false;
+
+  Future<void> _refreshProfile() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final user = userProvider.currentUser;
+      
+      await Future.delayed(const Duration(seconds: 1));
+      
+      if (user != null && mounted) {
+        await userProvider.loadUserProfile(user.userId);
+      }
+      
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile refreshed')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to refresh: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,11 +63,16 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Consumer<UserProvider>(
-          builder: (context, userProvider, child) {
-            final user = userProvider.currentUser;
+      body: RefreshIndicator(
+        onRefresh: _refreshProfile,
+        backgroundColor: AppTheme.white,
+        color: AppTheme.primaryColor,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Consumer<UserProvider>(
+            builder: (context, userProvider, child) {
+              final user = userProvider.currentUser;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -176,10 +213,12 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                     icon: const Icon(Icons.security),
                     label: const Text('Security Settings'),
                   ),
+                  ),
                 ),
               ],
             );
-          },
+            },
+          ),
         ),
       ),
     );
