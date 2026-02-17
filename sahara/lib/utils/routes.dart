@@ -45,6 +45,12 @@ class AppRoutes {
   static const String bookingConfirmation = '/booking-confirmation';
   static const String trackBooking = '/track-booking';
 
+  // ============ EARNINGS ROUTES ============
+  static const String earnings = '/earnings';
+  static const String earningsSummary = '/earnings-summary';
+  static const String paymentMethods = '/payment-methods';
+  static const String transactionHistory = '/transaction-history';
+
   // ============ REVIEW & RATING ROUTES ============
   static const String reviews = '/reviews';
   static const String addReview = '/add-review';
