@@ -6,6 +6,7 @@ import '../../providers/pet_provider.dart';
 import '../../models/booking_model.dart';
 import '../../models/user_model.dart';
 import '../../models/pet_model.dart';
+import '../common/activity_feed_screen.dart';
 
 /// Screen for caregivers to view booking details and take actions
 class CaregiverBookingDetailScreen extends StatefulWidget {
@@ -190,6 +191,9 @@ class _CaregiverBookingDetailScreenState
               _buildInstructions(),
             const SizedBox(height: 16),
             _buildEarningsCard(),
+            const SizedBox(height: 16),
+            if (_booking!.status == 'in-progress' || _booking!.status == 'completed')
+              _buildActivityFeedButton(),
             const SizedBox(height: 80),
           ],
         ),
@@ -697,3 +701,65 @@ class _RejectBookingDialogState extends State<_RejectBookingDialog> {
     super.dispose();
   }
 }
+
+
+  Widget _buildActivityFeedButton() {
+    return Card(
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ActivityFeedScreen(
+                bookingId: widget.bookingId,
+                petId: _booking!.petId,
+                isCaregiver: true,
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.pets,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Activity Feed',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Share updates with pet owner',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
