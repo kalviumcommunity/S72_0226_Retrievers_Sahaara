@@ -7,3 +7,5 @@ export 'loading_skeleton.dart';
 export 'google_sign_in_button.dart';
 export 'phone_auth_button.dart';
 export 'dashboard_widgets.dart';
+export 'earnings_widgets.dart';
+
