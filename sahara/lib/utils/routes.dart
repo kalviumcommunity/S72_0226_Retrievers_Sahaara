@@ -38,6 +38,9 @@ class AppRoutes {
   static const String caregiverList = '/caregivers';
   static const String caregiverProfile = '/caregiver-profile';
   static const String becomeCaregiver = '/become-caregiver';
+  static const String availableJobs = '/available-jobs';
+  static const String caregiverSchedule = '/caregiver-schedule';
+  static const String caregiverDashboard = '/caregiver-dashboard';
 
   // ============ BOOKING ROUTES ============
   static const String bookingDetails = '/booking-detail';

@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
-import '../common/user_profile_view.dart';
-import '../common/settings_screen.dart';
+import '../../utils/app_theme.dart';
+import '../../screens/common/settings_screen.dart';
+import '../../screens/common/earnings_summary_screen.dart';
+import 'caregiver_dashboard_screen.dart';
+import 'available_jobs_screen.dart';
+import 'caregiver_schedule_screen.dart';
 import 'caregiver_profile_setup.dart';
 
-/// Caregiver home screen with dashboard and navigation
+/// Caregiver home screen with bottom navigation and multiple screens
 class CaregiverHomeScreen extends StatefulWidget {
   const CaregiverHomeScreen({super.key});
 
@@ -15,10 +19,21 @@ class CaregiverHomeScreen extends StatefulWidget {
 }
 
 class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
+  int _currentIndex = 0;
+
+  // Screens for bottom navigation
+  late List<Widget> _screens;
+
   @override
   void initState() {
     super.initState();
     _loadData();
+    _screens = [
+      const CaregiverDashboardScreen(),
+      const AvailableJobsScreen(),
+      const CaregiverScheduleScreen(),
+      const CaregiverProfileScreen(),
+    ];
   }
 
   Future<void> _loadData() async {
@@ -32,257 +47,268 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Sahara'),
         centerTitle: true,
+        backgroundColor: AppTheme.white,
+        foregroundColor: AppTheme.black,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
-              // TODO: Navigate to notifications
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('You have 2 pending requests')),
+              );
             },
           ),
         ],
       ),
-      drawer: _buildDrawer(),
-      body: RefreshIndicator(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildWelcomeCard(),
-              const SizedBox(height: 24),
-              _buildStatsCards(),
-              const SizedBox(height: 24),
-              _buildQuickActions(),
-              const SizedBox(height: 24),
-              _buildTodaySchedule(),
-              const SizedBox(height: 24),
-              _buildRecentBookings(),
-            ],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppTheme.white,
+        selectedItemColor: AppTheme.primaryColor,
+        unselectedItemColor: AppTheme.gray600,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        elevation: 8,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search_outlined),
+            activeIcon: Icon(Icons.search),
+            label: 'Jobs',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today_outlined),
+            activeIcon: Icon(Icons.calendar_today),
+            label: 'Schedule',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+}
+
+/// Caregiver Profile Screen - Profile management for caregivers
+class CaregiverProfileScreen extends StatefulWidget {
+  const CaregiverProfileScreen({super.key});
+
+  @override
+  State<CaregiverProfileScreen> createState() => _CaregiverProfileScreenState();
+}
+
+class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
+  bool _isLoading = false;
+
+  Future<void> _refreshProfile() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userProvider =
+            Provider.of<UserProvider>(context, listen: false);
+        await userProvider.loadUserProfile(user.uid);
+      }
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile refreshed')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to refresh: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: _refreshProfile,
+      backgroundColor: AppTheme.white,
+      color: AppTheme.primaryColor,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Consumer<UserProvider>(
+          builder: (context, userProvider, child) {
+            final user = userProvider.currentUser;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile Header
+                _buildProfileHeader(user),
+                const SizedBox(height: 24),
+
+                // Stats Section
+                _buildStats(),
+                const SizedBox(height: 24),
+
+                // Verification Status
+                _buildVerificationStatus(),
+                const SizedBox(height: 24),
+
+                // Professional Info
+                _buildProfessionalInfo(),
+                const SizedBox(height: 24),
+
+                // Action Buttons
+                _buildActionButtons(),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      child: Consumer<UserProvider>(
-        builder: (context, userProvider, child) {
-          final user = userProvider.currentUser;
-          
-          return ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              UserAccountsDrawerHeader(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                accountName: Text(
-                  user?.name ?? 'Caregiver',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                accountEmail: Text(user?.email ?? ''),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  backgroundImage: user?.profilePhoto != null
-                      ? NetworkImage(user!.profilePhoto!)
-                      : null,
-                  child: user?.profilePhoto == null
-                      ? Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Theme.of(context).colorScheme.primary,
-                        )
-                      : null,
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.home),
-                title: const Text('Home'),
-                onTap: () => Navigator.pop(context),
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: const Text('My Bookings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to bookings
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.schedule),
-                title: const Text('Schedule'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to schedule
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.chat_bubble_outline),
-                title: const Text('Messages'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to messages
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.star_outline),
-                title: const Text('Reviews'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to reviews
-                },
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('My Profile'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserProfileView(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.work_outline),
-                title: const Text('Professional Profile'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CaregiverProfileSetup(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.settings),
-                title: const Text('Settings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.help_outline),
-                title: const Text('Help & Support'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Navigate to help
-                },
-              ),
-            ],
-          );
-        },
+  Widget _buildProfileHeader(dynamic user) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.borderColor),
       ),
-    );
-  }
-
-  Widget _buildWelcomeCard() {
-    return Consumer<UserProvider>(
-      builder: (context, userProvider, child) {
-        final user = userProvider.currentUser;
-        final firstName = user?.name.split(' ').first ?? 'there';
-        
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.green.shade600,
-                Colors.green.shade400,
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 40,
+            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+            child: user?.profilePhoto != null
+                ? CircleAvatar(
+                    radius: 40,
+                    backgroundImage: NetworkImage(user!.profilePhoto!),
+                  )
+                : Icon(
+                    Icons.person,
+                    size: 40,
+                    color: AppTheme.primaryColor,
+                  ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user?.name ?? 'Caregiver',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.black,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user?.email ?? 'No email',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.gray500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.successColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle, size: 14, color: AppTheme.successColor),
+                      SizedBox(width: 4),
+                      Text(
+                        'Verified',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.successColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-            borderRadius: BorderRadius.circular(16),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hello,',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      firstName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Ready to care for pets today?',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.favorite,
-                size: 60,
-                color: Colors.white,
-              ),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 
-  Widget _buildStatsCards() {
-    return Row(
+  Widget _buildStats() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.calendar_today,
-            label: 'Bookings',
-            value: '0',
-            color: Colors.blue,
-          ),
+        Text(
+          'Your Stats',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.black,
+              ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.star,
-            label: 'Rating',
-            value: '0.0',
-            color: Colors.orange,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.attach_money,
-            label: 'Earnings',
-            value: '₹0',
-            color: Colors.green,
-          ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          children: [
+            _buildStatCard(
+              icon: Icons.check_circle,
+              label: 'Completed',
+              value: '24',
+              color: AppTheme.successColor,
+            ),
+            _buildStatCard(
+              icon: Icons.star,
+              label: 'Rating',
+              value: '4.8',
+              color: AppTheme.warningColor,
+            ),
+            _buildStatCard(
+              icon: Icons.trending_up,
+              label: 'This Month',
+              value: '₹8,450',
+              color: AppTheme.primaryColor,
+            ),
+            _buildStatCard(
+              icon: Icons.person,
+              label: 'Pet Owners',
+              value: '12',
+              color: AppTheme.secondaryColor,
+            ),
+          ],
         ),
       ],
     );
@@ -295,30 +321,39 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: AppTheme.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: AppTheme.borderColor),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 28, color: color),
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
           const SizedBox(height: 8),
           Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppTheme.gray500,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.black,
             ),
           ),
         ],
@@ -326,205 +361,192 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     );
   }
 
-  Widget _buildQuickActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+  Widget _buildVerificationStatus() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.successColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.successColor.withValues(alpha: 0.2),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.calendar_today,
-                label: 'View Schedule',
-                color: Colors.blue,
-                onTap: () {
-                  // TODO: Navigate to schedule
-                },
-              ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.successColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.chat_bubble,
-                label: 'Messages',
-                color: Colors.purple,
-                onTap: () {
-                  // TODO: Navigate to messages
-                },
-              ),
+            child: const Icon(
+              Icons.verified,
+              color: AppTheme.successColor,
+              size: 20,
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.work_outline,
-                label: 'My Profile',
-                color: Colors.green,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CaregiverProfileSetup(),
-                    ),
-                  );
-                },
-              ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Background Verified',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.black,
+                  ),
+                ),
+                Text(
+                  'Your background check is approved',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.gray500,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.star,
-                label: 'Reviews',
-                color: Colors.orange,
-                onTap: () {
-                  // TODO: Navigate to reviews
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionCard({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
+          ),
+          const Icon(Icons.check_circle, color: AppTheme.successColor),
+        ],
       ),
     );
   }
 
-  Widget _buildTodaySchedule() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Today\'s Schedule',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            TextButton(
-              onPressed: () {
-                // TODO: Navigate to full schedule
-              },
-              child: const Text('View All'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Column(
-              children: [
-                Icon(Icons.event_available, size: 48, color: Colors.grey[400]),
-                const SizedBox(height: 12),
-                Text(
-                  'No bookings today',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Enjoy your free time!',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecentBookings() {
+  Widget _buildProfessionalInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Recent Bookings',
+          'Professional Info',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: AppTheme.black,
               ),
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
+        _buildInfoItem('Services Offered', 'Dog Walking, Pet Sitting, Daycare'),
+        _buildInfoItem('Experience', '3+ years in pet care'),
+        _buildInfoItem('Hourly Rate', '₹350 - ₹500'),
+        _buildInfoItem('Availability', 'Weekdays & Weekends'),
+      ],
+    );
+  }
+
+  Widget _buildInfoItem(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.borderColor),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.gray500,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.black,
+                ),
+              ),
+            ],
           ),
-          child: Center(
-            child: Column(
+          Icon(Icons.edit_outlined, color: AppTheme.gray500, size: 18),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Actions',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.black,
+              ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EarningsSummaryScreen(),
+                ),
+              );
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.history, size: 48, color: Colors.grey[400]),
-                const SizedBox(height: 12),
-                Text(
-                  'No booking history yet',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
+                Icon(Icons.money),
+                SizedBox(width: 8),
+                Text('View Earnings'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CaregiverProfileSetup(),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Your completed bookings will appear here',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[500],
-                  ),
+              );
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.edit),
+                SizedBox(width: 8),
+                Text('Edit Profile'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
                 ),
+              );
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.settings_outlined),
+                SizedBox(width: 8),
+                Text('Settings'),
               ],
             ),
           ),
@@ -532,4 +554,3 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
       ],
     );
   }
-}
