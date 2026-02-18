@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/review_model.dart';
-import '../models/caregiver_model.dart';
 import '../utils/constants.dart';
 
 /// Repository for review data operations

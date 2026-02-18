@@ -5,7 +5,6 @@ import '../../models/booking_model.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/constants.dart';
-import '../../widgets/custom_button.dart';
 
 /// Screen for creating a new booking
 class CreateBookingScreen extends StatefulWidget {
