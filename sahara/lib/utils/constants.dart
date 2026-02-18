@@ -12,6 +12,7 @@ class AppConstants {
   static const String petsCollection = 'pets';
   static const String bookingsCollection = 'bookings';
   static const String reviewsCollection = 'reviews';
+  static const String paymentsCollection = 'payments';
   static const String chatsCollection = 'chats';
   static const String activitiesSubcollection = 'activities';
   static const String messagesSubcollection = 'messages';
