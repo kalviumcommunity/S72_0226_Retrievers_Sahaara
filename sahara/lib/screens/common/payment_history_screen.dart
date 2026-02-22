@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../models/payment_model.dart';
 import '../../providers/payment_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../models/payment_model.dart';
 
 /// Screen to view payment history
 class PaymentHistoryScreen extends StatefulWidget {
@@ -32,17 +32,16 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
   }
 
   Future<void> _loadPayments() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
     final userProvider = context.read<UserProvider>();
     final paymentProvider = context.read<PaymentProvider>();
 
-    await userProvider.getUserById(userId);
     final isCaregiver = userProvider.currentUser?.role == 'caregiver';
 
-    await paymentProvider.loadUserPayments(userId, isCaregiver);
-    await paymentProvider.loadPaymentStats(userId, isCaregiver);
+    await paymentProvider.loadUserPayments(user.uid, isCaregiver);
+    await paymentProvider.loadPaymentStats(user.uid, isCaregiver);
 
     setState(() {
       _isLoading = false;
@@ -101,25 +100,27 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatItem(
-                  isCaregiver ? 'Total Earnings' : 'Total Spent',
-                  '₹${(isCaregiver ? stats['totalEarnings'] : stats['totalSpent']).toStringAsFixed(2)}',
-                  Icons.account_balance_wallet,
-                  Colors.green,
+                Expanded(
+                  child: _buildStatItem(
+                    isCaregiver ? 'Total Earnings' : 'Total Spent',
+                    '₹${(isCaregiver ? stats['totalEarnings'] : stats['totalSpent']).toStringAsFixed(2)}',
+                    Icons.account_balance_wallet,
+                    Colors.green,
+                  ),
                 ),
-                _buildStatItem(
-                  'Pending',
-                  '₹${stats['pendingAmount'].toStringAsFixed(2)}',
-                  Icons.pending,
-                  Colors.orange,
+                Container(
+                  width: 1,
+                  height: 50,
+                  color: Colors.grey.shade300,
                 ),
-                _buildStatItem(
-                  'Transactions',
-                  '${stats['totalTransactions']}',
-                  Icons.receipt_long,
-                  Colors.blue,
+                Expanded(
+                  child: _buildStatItem(
+                    'Pending',
+                    '₹${stats['pendingAmount'].toStringAsFixed(2)}',
+                    Icons.pending,
+                    Colors.orange,
+                  ),
                 ),
               ],
             ),
@@ -133,12 +134,12 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
       String label, String value, IconData icon, Color color) {
     return Column(
       children: [
-        Icon(icon, color: color, size: 32),
+        Icon(icon, color: color, size: 28),
         const SizedBox(height: 8),
         Text(
           value,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: color,
           ),
@@ -146,9 +147,9 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 13,
           ),
         ),
       ],
@@ -172,7 +173,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
                 Icon(
                   Icons.payment,
                   size: 64,
-                  color: Colors.grey.shade300,
+                  color: Colors.grey.shade400,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -229,61 +230,96 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(
-          backgroundColor: statusColor.withOpacity(0.1),
-          child: Icon(statusIcon, color: statusColor),
-        ),
-        title: Text(
-          payment.paymentMethodDisplay,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              'Transaction ID: ${payment.transactionId ?? 'N/A'}',
-              style: const TextStyle(fontSize: 12),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _formatDate(payment.createdAt),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '₹${payment.amount.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                payment.statusDisplay,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: statusColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+      child: InkWell(
         onTap: () => _showPaymentDetails(payment),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          payment.paymentMethodDisplay,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _formatDate(payment.createdAt),
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '₹${payment.amount.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              statusIcon,
+                              size: 14,
+                              color: statusColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              payment.statusDisplay,
+                              style: TextStyle(
+                                color: statusColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              if (payment.transactionId != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Transaction ID: ${payment.transactionId}',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -325,14 +361,16 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
               _buildDetailRow('Amount', '₹${payment.amount.toStringAsFixed(2)}'),
               _buildDetailRow('Payment Method', payment.paymentMethodDisplay),
               _buildDetailRow('Status', payment.statusDisplay),
-              _buildDetailRow('Transaction ID', payment.transactionId ?? 'N/A'),
-              _buildDetailRow('Created', _formatDate(payment.createdAt)),
+              _buildDetailRow('Date', _formatDate(payment.createdAt)),
+              if (payment.transactionId != null)
+                _buildDetailRow('Transaction ID', payment.transactionId!),
               if (payment.completedAt != null)
-                _buildDetailRow('Completed', _formatDate(payment.completedAt!)),
-              if (payment.refundedAt != null)
-                _buildDetailRow('Refunded', _formatDate(payment.refundedAt!)),
+                _buildDetailRow(
+                    'Completed At', _formatDate(payment.completedAt!)),
               if (payment.failureReason != null)
                 _buildDetailRow('Failure Reason', payment.failureReason!),
+              if (payment.refundedAt != null)
+                _buildDetailRow('Refunded At', _formatDate(payment.refundedAt!)),
             ],
           ),
         ),
@@ -344,23 +382,25 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              ),
             ),
           ),
-          Flexible(
+          Expanded(
             child: Text(
               value,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
-              textAlign: TextAlign.right,
             ),
           ),
         ],
@@ -369,6 +409,13 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+    return '${date.day}/${date.month}/${date.year} ${_formatTime(date)}';
+  }
+
+  String _formatTime(DateTime time) {
+    final hour = time.hour > 12 ? time.hour - 12 : time.hour;
+    final period = time.hour >= 12 ? 'PM' : 'AM';
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute $period';
   }
 }

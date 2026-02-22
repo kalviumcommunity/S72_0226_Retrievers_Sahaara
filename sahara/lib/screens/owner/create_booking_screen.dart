@@ -5,6 +5,7 @@ import '../../models/booking_model.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../utils/constants.dart';
+import 'payment_screen.dart';
 
 /// Screen for creating a new booking
 class CreateBookingScreen extends StatefulWidget {
@@ -165,10 +166,19 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
 
     if (bookingId != null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking request sent successfully!')),
+        // Navigate to payment screen
+        final createdBooking = booking.copyWith(bookingId: bookingId);
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentScreen(booking: createdBooking),
+          ),
         );
-        Navigator.pop(context, true);
+        
+        // If payment was successful, pop back to previous screen
+        if (result == true && mounted) {
+          Navigator.pop(context, true);
+        }
       }
     } else {
       if (mounted) {
