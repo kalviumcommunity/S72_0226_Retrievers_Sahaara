@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../providers/caregiver_provider.dart';
+import '../../providers/favorite_provider.dart';
 import '../../models/caregiver_model.dart';
 import '../../models/user_model.dart';
 import '../owner/create_booking_screen.dart';
@@ -64,6 +66,38 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
       appBar: AppBar(
         title: const Text('Caregiver Profile'),
         actions: [
+          Consumer<FavoriteProvider>(
+            builder: (context, favoriteProvider, child) {
+              final isFavorite = favoriteProvider.isFavorite(widget.caregiverId);
+              return IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : null,
+                ),
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user == null) return;
+
+                  final success = await favoriteProvider.toggleFavorite(
+                    user.uid,
+                    widget.caregiverId,
+                  );
+
+                  if (success && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          isFavorite
+                              ? 'Removed from favorites'
+                              : 'Added to favorites',
+                        ),
+                      ),
+                    );
+                  }
+                },
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
