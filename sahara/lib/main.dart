@@ -12,6 +12,7 @@ import 'providers/review_provider.dart';
 import 'providers/payment_provider.dart';
 import 'providers/analytics_provider.dart';
 import 'providers/favorite_provider.dart';
+import 'providers/search_history_provider.dart';
 import 'utils/app_theme.dart';
 import 'widgets/auth_wrapper.dart';
 import 'services/notification_service.dart';
@@ -47,6 +48,7 @@ class SaharaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PaymentProvider()),
         ChangeNotifierProvider(create: (_) => AnalyticsProvider()),
         ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+        ChangeNotifierProvider(create: (_) => SearchHistoryProvider()),
         // TODO: Add more providers as they are created
       ],
       child: MaterialApp(
