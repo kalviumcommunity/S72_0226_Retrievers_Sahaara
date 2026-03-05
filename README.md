@@ -47,7 +47,7 @@ flutter run -d chrome
 
 **Team Retrievers**
 - **Gaurav** - Authentication & Profile Management
-- **Team Member 2** - Discovery & Booking System
+- **Shivam** - Discovery & Booking System
 - **Team Member 3** - Monitoring & Reviews
 
 ---
