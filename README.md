@@ -12,23 +12,7 @@ A comprehensive Flutter application connecting pet owners with trusted caregiver
 - **Documentation:** [`docs/`](docs/)
 - **PR Documentation:** [`docs/pr-documentation/`](docs/pr-documentation/)
 
----
 
-## 🚀 Getting Started
-
-```bash
-# Clone repository
-git clone https://github.com/kalviumcommunity/S72_0226_Retrievers_Sahaara.git
-
-# Navigate to app
-cd sahara
-
-# Install dependencies
-flutter pub get
-
-# Run app
-flutter run -d chrome
-```
 
 ---
 
